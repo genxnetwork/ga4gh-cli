@@ -26,9 +26,9 @@ class TES:
 
         if self.username and self.password:
             auth = (self.username, self.password)
-            response = requests.request(method, url, json=data, headers=headers, auth=auth)
+            response = requests.request(method, url, json=data, headers=headers, params=params, auth=auth)
         else:
-            response = requests.request(method, url, json=data, headers=headers)
+            response = requests.request(method, url, json=data, headers=headers, params=params)
 
         if response.status_code != 200:
             print(f"Error: HTTP {response.status_code} - {response.reason}")
@@ -39,7 +39,9 @@ class TES:
         return self.make_request("POST", "ga4gh/tes/v1/tasks", data=task)
 
     def get_task(self, task_id):
-        return self.make_request("GET", f"ga4gh/tes/v1/tasks/{task_id}")
+        endpoint = f"ga4gh/tes/v1/tasks/{task_id}"
+        params = {'view': 'FULL'} if self.debug else None
+        return self.make_request("GET", endpoint, data=None, params=params)
 
     def list_tasks(self):
         return self.make_request("GET", "ga4gh/tes/v1/tasks")
@@ -120,10 +122,14 @@ def create_task(ctx, task_file, config):
 @click.pass_context
 def task_status(ctx, task_id, config):
     config = load_config(config)
-    tes = TES(config["base_url"], config["http-username"], config["http-password"], ctx.obj['debug'])
+    debug = ctx.obj['debug']
+    tes = TES(config["base_url"], config["http-username"], config["http-password"], debug)
     task = tes.get_task(task_id)
     if task:
-        print(task.get("state"))
+        if not debug:
+            print(task.get("state"))
+        else:
+            print(task)
     else:
         print("Failed to retrieve task.")
 
