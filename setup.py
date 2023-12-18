@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ga4gh-cli',
-    version='0.1.4',
+    version='0.1.5',
     packages=find_packages(),
     py_modules=['ga4gh_cli'], 
     entry_points={

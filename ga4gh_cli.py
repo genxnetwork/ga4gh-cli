@@ -6,7 +6,7 @@ import click
 import re
 from typing import Dict
 
-VERSION = "0.1.4"
+VERSION = "0.1.5"
 
 from click import version_option
 

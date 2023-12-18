@@ -25,7 +25,7 @@ bash install.sh
 
 Alternatively, you can install `ga4gh-cli` using pip packet manager:
 ```commandline
-pip install ga4gh-cli==0.1.4
+pip install ga4gh-cli==0.1.5
 ```
 
 ## TES Task Definition File
