@@ -6,6 +6,10 @@ import click
 import re
 from typing import Dict
 
+VERSION = "0.1.4"
+
+from click import version_option
+
 class TES:
     def __init__(self, base_url, debug=False):
         self.base_url = base_url.rstrip('/')
@@ -72,6 +76,7 @@ def replace_placeholders(obj, values) -> Dict:
 
 @click.group()
 @click.option('--debug', is_flag=True, help='Enable debug mode.')
+@version_option(version=VERSION, prog_name="GA4GH CLI")
 @click.pass_context
 def cli(ctx, debug):
     ctx.ensure_object(dict)

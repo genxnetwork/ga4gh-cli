@@ -1,5 +1,7 @@
 #!/bin/bash
 
+pip uninstall ga4gh-cli -y
+
 # Define directories and files to remove
 DIRECTORIES=("dist" "build")
 FILES=("*.pyc")
