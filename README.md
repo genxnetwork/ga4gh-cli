@@ -1,4 +1,4 @@
-# Command-Line Interface for GA4GH-compliant environments
+# Command-Line Interface for GA4GH Environments
 
 This project provides a Command-Line Interface (CLI) for interacting with a GA4GH-compliant federated research environments.
 
