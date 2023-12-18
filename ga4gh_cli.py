@@ -6,13 +6,15 @@ import click
 import re
 from typing import Dict
 
-VERSION = "0.1.5"
+VERSION = "0.1.6"
 
 from click import version_option
 
 class TES:
-    def __init__(self, base_url, debug=False):
+    def __init__(self, base_url, username=None, password=None, debug=False):
         self.base_url = base_url.rstrip('/')
+        self.username = username
+        self.password = password
         self.debug = debug
 
     def make_request(self, method, endpoint, data=None, params=None):
@@ -22,7 +24,12 @@ class TES:
         url = f"{self.base_url}/{endpoint}"
         headers = {"Content-Type": "application/json"}
 
-        response = requests.request(method, url, json=data, headers=headers)
+        if self.username and self.password:
+            auth = (self.username, self.password)
+            response = requests.request(method, url, json=data, headers=headers, auth=auth)
+        else:
+            response = requests.request(method, url, json=data, headers=headers)
+
         if response.status_code != 200:
             print(f"Error: HTTP {response.status_code} - {response.reason}")
             return None
@@ -88,7 +95,7 @@ def cli(ctx, debug):
 @click.pass_context
 def create_task(ctx, task_file, config):
     config = load_config(config)
-    tes = TES(config["base_url"], ctx.obj['debug'])
+    tes = TES(config["base_url"], config["http-username"], config["http-password"], ctx.obj['debug'])
 
     with open(task_file, 'r') as json_file:
         task = json.load(json_file)
@@ -113,7 +120,7 @@ def create_task(ctx, task_file, config):
 @click.pass_context
 def task_status(ctx, task_id, config):
     config = load_config(config)
-    tes = TES(config["base_url"], ctx.obj['debug'])
+    tes = TES(config["base_url"], config["http-username"], config["http-password"], ctx.obj['debug'])
     task = tes.get_task(task_id)
     if task:
         print(task.get("state"))
@@ -125,7 +132,7 @@ def task_status(ctx, task_id, config):
 @click.pass_context
 def list_all_tasks(ctx, config):
     config = load_config(config)
-    tes = TES(config["base_url"], ctx.obj['debug'])
+    tes = TES(config["base_url"], config["http-username"], config["http-password"], ctx.obj['debug'])
     task_list = tes.list_tasks()
     if task_list:
         tasks = task_list.get("tasks", [])
