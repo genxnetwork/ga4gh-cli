@@ -9,8 +9,24 @@ The current version only supports working with Task Execution Service (TES) serv
 - **List Tasks**: List all tasks from the TES server.
 
 ## Installation
-
 To use this CLI, ensure that Python 3 is installed on your system. No additional installation steps are required for the CLI itself.
+
+### Installation from GitHub Repository
+
+Open your terminal and run the following command to install:
+
+```commandline
+git clone https://github.com/genxnetwork/ga4gh-cli.git
+cd ga4gh-cli
+bash install.sh
+```
+
+### Installation from PyPI Repository
+
+Alternatively, you can install `ga4gh-cli` using pip packet manager:
+```commandline
+pip install ga4gh-cli==0.1.4
+```
 
 ## TES Task Definition File
 
@@ -71,7 +87,7 @@ You can find example task files in `sample` directory.
 To create a task:
 
 ```bash
-./tes-cli.py create-task [TASK_FILE] --config [CONFIG_FILE]
+ga4gh-cli create-task [TASK_FILE] --config [CONFIG_FILE]
 ```
 `TASK_FILE`: Path to the JSON file containing the task definition.  
 `CONFIG_FILE`: Path to the JSON config file containing the base URL for the TES server and other necessary configurations.
@@ -81,7 +97,7 @@ To create a task:
 To check the status of a task:
 
 ```bash
-./tes-cli.py task-status [TASK_ID] --config [CONFIG_FILE]
+ga4gh-cli task-status [TASK_ID] --config [CONFIG_FILE]
 ```
 `TASK_ID`: The ID of the task.  
 `CONFIG_FILE`: Path to the JSON config file.
@@ -91,7 +107,7 @@ To check the status of a task:
 The CLI also supports a debug mode for additional logging:
 
 ```bash
-./tes-cli.py --debug ...
+ga4gh-cli --debug ...
 ```
 
 ### Config File
