@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Ensure script is run from project root directory
+if [ ! -f setup.py ]; then
+    echo "Error: Script must be run from the project root directory."
+    exit 1
+fi
+
 # Clean up previous build artifacts (optional)
 echo "Cleaning up previous build artifacts..."
 rm -rf dist build

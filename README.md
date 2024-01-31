@@ -4,12 +4,12 @@ This project provides a Command-Line Interface (CLI) for interacting with a GA4G
 
 ## Features
 The current version only supports working with Task Execution Service (TES) server. The CLI allows users to create tasks, check the status of tasks, and list all tasks in the TES server.
-- **Create Tasks**: Submit new tasks to the TES server.
-- **Task Status**: Retrieve the status of a specific task.
-- **List Tasks**: List all tasks from the TES server.
+- **Create Tasks**: Submit new tasks to the TES server. For example, `ga4gh-cli create-task my-task.tes --params my-task.env`.
+- **Task Status**: Retrieve the status of a specific task. For example, `ga4gh-cli task-status my-task-id`.
+- **List Tasks**: List all tasks from the TES server. For example, `ga4gh-cli list-tasks`.
 
 ## Installation
-To use this CLI, ensure that Python 3 is installed on your system. No additional installation steps are required for the CLI itself.
+To use this CLI, ensure that Python 3 is installed on your system. 
 
 ### Installation from GitHub Repository
 
@@ -18,19 +18,25 @@ Open your terminal and run the following command to install:
 ```commandline
 git clone https://github.com/genxnetwork/ga4gh-cli.git
 cd ga4gh-cli
-bash install.sh
+pip install .
 ```
 
 ### Installation from PyPI Repository
 
 Alternatively, you can install `ga4gh-cli` using pip packet manager:
 ```commandline
-pip install ga4gh-cli==0.1.5
+pip install --upgrade ga4gh-cli
 ```
 
 ## TES Task Definition File
 
-This JSON file defines a TES task with configurable placeholders for input/output parameters or access credentials. The task is named "GRAPE" and consists of multiple executors and resources.
+The following is an example of a JSON file that defines a TES task. In this example, the task consists of multiple executors and resources. Please note that this is just an example, and your task definition may vary based on your specific requirements. Task files may include configurable placeholders for input/output parameters and access credentials, such as `${INPUT}`, `${OUTPUT}`, and `${AWS_ACCESS_KEY_ID}`. Before sending the task to the TES server, these placeholders can be automaticly replaced in three ways:
+
+1. **Environment Variables**: If an environment variable with the same name as the placeholder is set in your system, the CLI will use its value.
+
+2. **Parameter File**: You can provide a `.env` file with your parameters using the `--params` option when running the CLI. This file should contain key-value pairs in the format `KEY=VALUE`, one per line. An example file `grape.env.template` is provided in the `sample` directory.
+
+3. **Console Input**: If a value for a placeholder is not found in the environment variables or the parameter file, the CLI will prompt you to enter it in the console when you run the task.
 
 ```json
 {
@@ -49,7 +55,6 @@ This JSON file defines a TES task with configurable placeholders for input/outpu
                 "aws", "s3", "cp", "${INPUT}", "/vol/a/input.vcf.gz"
             ],
             "env": {
-                // These environment variables are configured in a separate file
                 "AWS_ACCESS_KEY_ID": "${AWS_ACCESS_KEY_ID}", 
                 "AWS_SECRET_ACCESS_KEY": "${AWS_SECRET_ACCESS_KEY}",
                 "AWS_REGION": "${AWS_REGION}"
@@ -57,7 +62,6 @@ This JSON file defines a TES task with configurable placeholders for input/outpu
         },
         {
             "image": "YOUR DOCKER CONTAINER NAME",
-            // Example command to be executed after deployment
             "command": [
                 "python", "launcher.py",
                 "--input", "/vol/a/input.vcf.gz"
@@ -78,54 +82,70 @@ This JSON file defines a TES task with configurable placeholders for input/outpu
     ]
 }
 ```
-You can find example task files in `sample` directory.
+You can find example task files in the `sample` directory. These files provide templates that you can use as a starting point for creating your own tasks. Simply copy an example file, replace the placeholder values with your own, and save it in your project directory.
 
 ## Usage
+
+## User Configuration File
+
+The CLI expects to find a user configuration file at `~/.ga4gh-cli`. This file should contain the base URL for the TES server, HTTP basic authentication username and password, and any environment variables that may be used by the task template engine.
+
+Here's an example of what this file might look like:
+
+```ini
+[TES]
+base_url = https://0.0.0.0:8080
+username = ga4gh
+password = elixir
+```
 
 ### Create a Task
 
 To create a task:
 
 ```bash
-ga4gh-cli create-task [TASK_FILE] --config [CONFIG_FILE]
+ga4gh-cli create-task [TASK_FILE] [--params PARAMS]
 ```
 `TASK_FILE`: Path to the JSON file containing the task definition.  
-`CONFIG_FILE`: Path to the JSON config file containing the base URL for the TES server and other necessary configurations.
+`--params PARAMS`: (Optional) Path to the `.env` format file containing the base URL for the TES server and other necessary configurations. This file should contain key-value pairs in the format `KEY=VALUE`, one per line.
 
 ### Task Status
 
 To check the status of a task:
 
 ```bash
-ga4gh-cli task-status [TASK_ID] --config [CONFIG_FILE]
+ga4gh-cli task-status [TASK_ID] [--view VIEW] [--attest]
 ```
 `TASK_ID`: The ID of the task.  
-`CONFIG_FILE`: Path to the JSON config file.
+`--view VIEW` : (Optional) The level of detail to return. This can be one of MINIMAL, BASIC, or FULL. If not specified, the default is BASIC.
 
-### Debug Mode
+`--attest`: (Optional) If specified, the response will include a TEE Attestation measurment of the task workload.
 
-The CLI also supports a debug mode for additional logging:
+For example, to get the full details of a task:
+```bash
+ga4gh-cli task-status task-5c7d7853 --view FULL
+```
+And to get the details of a task with an attestation:
+```bash
+ga4gh-cli task-status task-5c7d7853 --attest
+```
+### List Tasks
+
+To list all tasks:
 
 ```bash
-ga4gh-cli --debug ...
+ga4gh-cli list-tasks
 ```
 
-### Config File
+### Logging
 
-You need to provide a JSON configuration file that contains the base URL and any required placeholders for your GA4GH environment.
+The CLI supports different levels of logging. You can set the log level using the `--log-level` option followed by one of the following values: `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`. 
 
-Example configuration file (`task-name.tesconfig`):
-```json
-{  
-    "base_url": "https://tes-server.example.com",  
-    "AWS_ACCESS_KEY_ID": "your-access-key-id",  
-    "AWS_SECRET_ACCESS_KEY": "your-secret-access-key",  
-    "AWS_REGION": "eu-west-3",  
-    "INPUT": "s3://your-storage-url/input.vcf.gz",  
-    "OUTPUT": "s3://your-storage-url/output.tsv"  
-}
+For example, to enable debug logging, you would run:
+
+```bash
+ga4gh-cli --log-level DEBUG ...
 ```
-In this example, replace the values ("your-access-key-id," "your-secret-access-key," etc.) with your actual configuration values.
 
 ## Contributing
 

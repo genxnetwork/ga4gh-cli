@@ -1,8 +1,0 @@
-{
-    "base_url": "tes-server.example.com",
-    "${AWS_ACCESS_KEY_ID}": "your-id",
-    "${AWS_SECRET_ACCESS_KEY}": "your-key",
-    "${AWS_REGION}": "your-region",
-    "${INPUT}": "s3://your-storage/input.vcf.gz",
-    "${OUTPUT}": "s3://your-storage/relatives_output.tsv"
-}

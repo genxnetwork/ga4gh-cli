@@ -2,12 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='ga4gh-cli',
-    version='0.1.6',
+    version=open('VERSION', 'r').read().strip(),
     packages=find_packages(),
     py_modules=['ga4gh_cli'], 
     entry_points={
         'console_scripts': [
-            'ga4gh-cli=ga4gh_cli:cli',
+            'ga4gh-cli=main:cli',
         ],
     },
     author='Pavel Nikonorov',
