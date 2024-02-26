@@ -4,9 +4,9 @@ This project provides a Command-Line Interface (CLI) for interacting with a GA4G
 
 ## Features
 The current version only supports working with Task Execution Service (TES) server. The CLI allows users to create tasks, check the status of tasks, and list all tasks in the TES server.
-- **Create Tasks**: Submit new tasks to the TES server. For example, `ga4gh-cli create-task my-task.tes --params my-task.env`.
-- **Task Status**: Retrieve the status of a specific task. For example, `ga4gh-cli task-status my-task-id`.
-- **List Tasks**: List all tasks from the TES server. For example, `ga4gh-cli list-tasks`.
+- **Create Tasks**: Submit new tasks to the TES server. For example, `ga4gh-cli tes create my-task.tes my-task.env`.
+- **Task Status**: Retrieve the status of a specific task. For example, `ga4gh-cli tes status my-task-id`.
+- **List Tasks**: List all tasks from the TES server. For example, `ga4gh-cli tes list`.
 
 ## Installation
 To use this CLI, ensure that Python 3 is installed on your system. 
@@ -99,22 +99,30 @@ username = ga4gh
 password = elixir
 ```
 
+### AAI
+
+The following command will open webpage for OAuth authentication.
+
+```bash
+ga4gh-cli aai login 
+```
+
 ### Create a Task
 
 To create a task:
 
 ```bash
-ga4gh-cli create-task [TASK_FILE] [--params PARAMS]
+ga4gh-cli tes create [TASK_FILE] [PARAMS]
 ```
 `TASK_FILE`: Path to the JSON file containing the task definition.  
-`--params PARAMS`: (Optional) Path to the `.env` format file containing the base URL for the TES server and other necessary configurations. This file should contain key-value pairs in the format `KEY=VALUE`, one per line.
+`PARAMS`: (Optional) Path to the `.env` format file containing the base URL for the TES server and other necessary configurations. This file should contain key-value pairs in the format `KEY=VALUE`, one per line.
 
 ### Task Status
 
 To check the status of a task:
 
 ```bash
-ga4gh-cli task-status [TASK_ID] [--view VIEW] [--attest]
+ga4gh-cli tes status [TASK_ID] [--view VIEW] [--attest]
 ```
 `TASK_ID`: The ID of the task.  
 `--view VIEW` : (Optional) The level of detail to return. This can be one of MINIMAL, BASIC, or FULL. If not specified, the default is BASIC.
@@ -123,18 +131,18 @@ ga4gh-cli task-status [TASK_ID] [--view VIEW] [--attest]
 
 For example, to get the full details of a task:
 ```bash
-ga4gh-cli task-status task-5c7d7853 --view FULL
+ga4gh-cli tes status task-5c7d7853 --view FULL
 ```
 And to get the details of a task with an attestation:
 ```bash
-ga4gh-cli task-status task-5c7d7853 --attest
+ga4gh-cli tes status task-5c7d7853 --attest
 ```
 ### List Tasks
 
 To list all tasks:
 
 ```bash
-ga4gh-cli list-tasks
+ga4gh-cli tes list
 ```
 
 ### Logging
