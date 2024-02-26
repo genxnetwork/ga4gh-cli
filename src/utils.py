@@ -23,7 +23,7 @@ def replace_placeholders(obj, values) -> Dict:
     """Replace placeholders in a string, dict, or list with given values."""
     if isinstance(obj, str):
         for placeholder, value in values.items():
-            obj = obj.replace(placeholder, value)
+            obj = obj.replace(f"${{{placeholder}}}", value)
         return obj
     elif isinstance(obj, dict):
         return {k: replace_placeholders(v, values) for k, v in obj.items()}

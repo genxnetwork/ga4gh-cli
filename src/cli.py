@@ -4,41 +4,76 @@ import json
 import logging
 from dotenv import dotenv_values
 from .tes.tes_client import TES
+from .aai.aai_client import AAI
 from .utils import find_placeholders, replace_placeholders
 
 class CLI:
     def __init__(self, config):
         self.config = config
+        self.token = self.get_aai_instance().get_token()
 
-    def create_task(self, task_file, params):
-        with open(task_file, 'r') as json_file:
+    def _process_input_file(self, input_file, params):
+        with open(input_file, 'r') as json_file:
             task = json.load(json_file)
 
         if params:
             params = dotenv_values(params)
 
         placeholders = find_placeholders(task)
+        values = {}
         for placeholder in placeholders:
             value = params.get(placeholder) if params else None  # Try to get the value from the params
             if value is None:
-                value = self.config.get(placeholder)  # Try to get the value from the config
+                value = os.environ.get(placeholder)  # Try to get the value from the environment
                 if value is None:
-                    value = os.environ.get(placeholder)  # Try to get the value from the environment
-                    if value is None:
-                        value = click.prompt(f"Enter value for {placeholder}", type=str)
-            self.config[placeholder] = value
+                    value = click.prompt(f"Enter value for {placeholder}", type=str)
+            values[placeholder] = value
 
-        task = TES(self.config).create_task(replace_placeholders(task, self.config))
+        return replace_placeholders(task, values)
+    
+
+    # AAI commands
+
+    def get_aai_instance(self):
+        try:
+            base_url = self.config['AAI']['url']
+            username = self.config['AAI']['username']
+            password = self.config['AAI']['password']
+        except KeyError:
+            raise click.ClickException('Username and password keys must be present in the config file.')
+
+        return AAI(base_url=base_url, username=username, password=password)
+
+    def aai_login(self):
+        self.token = self.get_aai_instance().login()
+        if self.token:
+            logging.info("Successfully logged in.")
+        else:
+            logging.error("Failed to log in.")
+
+
+    # TES commands
+            
+    def get_tes_instance(self):
+        return TES(
+            base_url = self.config['TES']['base_url'], 
+            username = self.config['TES']['username'], 
+            password = self.config['TES']['password'], 
+            token = self.token)
+
+    def tes_create(self, task_file, params):
+        print(task_file, params)
+        task = self.get_tes_instance().create(self._process_input_file(task_file, params))
         if task:
             logging.info(f"Created Task ID: {task.get('id')}")
         else:
             logging.error("Failed to create task.")
 
-    def task_status(self, task_id, view, attest):
+    def tes_status(self, task_id, view, attest):
         if attest and view == 'MINIMAL': # MINIMAL view does not contain the measurement
             view = 'FULL'
 
-        task = TES(self.config).get_task(task_id, view)
+        task = self.get_tes_instance().status(task_id, view)
         if not task:
             logging.error("Failed to retrieve task.")
             return
@@ -80,9 +115,9 @@ class CLI:
         else:
             logging.info(task)
 
-    def list_all_tasks(self):
+    def tes_list(self):
         """List all tasks from the TES server."""
-        task_list = TES(self.config).list_tasks()
+        task_list = self.get_tes_instance().list()
         if task_list:
             tasks = task_list.get("tasks", [])
             for task in tasks:
@@ -94,3 +129,45 @@ class CLI:
                     logging.warning("Task ID or state missing.")
         else:
             logging.error("Failed to retrieve task list.")
+
+
+    # WES commands
+
+    def wes_create(self, workflow_file, params):
+        raise NotImplementedError("WES create command is not implemented yet.")
+
+    def wes_status(self, workflow_id, view, attest):
+        logging.error("WES status command is not implemented yet.")
+        raise NotImplementedError("WES status command is not implemented yet.")
+
+    def wes_list(self):
+        raise NotImplementedError("WES list command is not implemented yet.")
+    
+    # DRS commands
+
+    def drs_get(self, object_id):
+        raise NotImplementedError("DRS get command is not implemented yet.")
+
+    def drs_put(self, object_file, params):
+        raise NotImplementedError("DRS put command is not implemented yet.")
+
+    def drs_delete(self, object_id):
+        raise NotImplementedError("DRS delete command is not implemented yet.")
+
+    def drs_list(self):
+        raise NotImplementedError("DRS list command is not implemented yet.")
+    
+
+    # TRS commands
+
+    def trs_get(self, tool_id):
+        raise NotImplementedError("TRS get command is not implemented yet.")
+
+    def trs_put(self, tool_file, params):
+        raise NotImplementedError("TRS put command is not implemented yet.")
+
+    def trs_delete(self, tool_id):
+        raise NotImplementedError("TRS delete command is not implemented yet.")
+
+    def trs_list(self):
+        raise NotImplementedError("TRS list command is not implemented yet.")
